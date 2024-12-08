@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "coffe_timer" "\0"
+            VALUE "FileDescription", "devtimer" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "coffe_timer" "\0"
+            VALUE "InternalName", "devtimer" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "coffe_timer.exe" "\0"
-            VALUE "ProductName", "coffe_timer" "\0"
+            VALUE "OriginalFilename", "devtimer.exe" "\0"
+            VALUE "ProductName", "devtimer" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

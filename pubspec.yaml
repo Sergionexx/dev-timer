@@ -1,4 +1,4 @@
-name: coffe_timer
+name: devtimer
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -35,6 +35,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
+  provider: ^6.1.2
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.0
+  carousel_slider: ^5.0.0
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +53,9 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+flutter_native_splash:
+  color: "#E6A24A"
+  image: assets/splash/splash.png
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -80,6 +87,10 @@ flutter:
     - family: Pixelify
       fonts:
         - asset: assets/fonts/PixelifySans-VariableFont_wght.ttf
+
+    - family: Doto
+      fonts:
+        - asset: assets/fonts/Doto-Medium.ttf   
 
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

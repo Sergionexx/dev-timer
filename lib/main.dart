@@ -1,4 +1,4 @@
-import 'package:coffe_timer/views/home.dart';
+import 'package:devtimer/views/home.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,12 +12,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dev Timer',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFE6A24A)),
-        useMaterial3: true,
-      ),
-      home: const HomePage(title: 'Dev Timer'),
-    );
+        debugShowCheckedModeBanner: false,
+        title: 'Dev Timer',
+        initialRoute: '/',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFE6A24A)),
+          useMaterial3: true,
+        ),
+        routes: <String, WidgetBuilder>{
+          '/': (BuildContext context) => const HomePage(title: 'Dev Timer'),
+        });
   }
 }

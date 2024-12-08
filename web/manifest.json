@@ -1,6 +1,6 @@
 {
-    "name": "coffe_timer",
-    "short_name": "coffe_timer",
+    "name": "devtimer",
+    "short_name": "devtimer",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

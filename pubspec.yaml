@@ -39,6 +39,8 @@ dependencies:
   flutter_launcher_icons: ^0.14.1
   flutter_native_splash: ^2.4.0
   carousel_slider: ^5.0.0
+  flutter_local_notifications: ^18.0.1
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
@@ -90,7 +92,11 @@ flutter:
 
     - family: Doto
       fonts:
-        - asset: assets/fonts/Doto-Medium.ttf   
+        - asset: assets/fonts/Doto-Medium.ttf
+
+    - family:  Tiny5
+      fonts:
+        - asset: assets/fonts/Tiny5-Regular.ttf      
 
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

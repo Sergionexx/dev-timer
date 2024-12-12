@@ -1,8 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:label="coffe_timer"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+         android:requestLegacyExternalStorage="true"
+        android:usesCleartextTraffic="true">
+           
+        <service android:name="com.dexterous.flutterlocalnotifications.ForegroundService" android:permission="android.permission.FOREGROUND_SERVICE" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

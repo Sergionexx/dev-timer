@@ -308,7 +308,7 @@ class _HomePageState extends State<HomePage> {
                       child: Icon(Icons.stop),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 30,
                   ),
                   Expanded(

@@ -152,12 +152,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _stopTimer() {
-    _timer?.cancel(); // Detener el temporizador
+    _timer.cancel(); // Detener el temporizador
     setState(() {
       _seconds = 25 * 60;
       _isTimerRunning = false; // Cambiar el estado a detenido
     });
-    _updateNotification(0);
+    // _updateNotification(0);
   }
 
   void _startTimer() {
@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _seconds--;
         });
-        _updateNotification(_formattedTime);
+        // _updateNotification(_formattedTime);
       } else {
         _timer?.cancel(); // Detener el temporizador cuando llegue a 0
         _showNotificationComplete();
@@ -270,7 +270,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Image.asset(
-                'assets/gifs/CoffeCompleteWhite.gif',
+                'assets/gifs/CoffeCompleteWhite3-4.gif',
                 height: 425.0,
                 width: 425.0,
               ),

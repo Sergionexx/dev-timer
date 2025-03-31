@@ -27,6 +27,23 @@ class _HomePageState extends State<HomePage> {
   NavigationDestinationLabelBehavior labelBehavior =
       NavigationDestinationLabelBehavior.onlyShowSelected;
 
+  List<String> coffeeGifs = [
+    'assets/gifs/CoffeCompleteWhite0-4.gif',
+    'assets/gifs/CoffeCompleteWhite1-4.gif',
+    'assets/gifs/CoffeCompleteWhite2-4.gif',
+    'assets/gifs/CoffeCompleteWhite3-4.gif',
+    'assets/gifs/CoffeCompleteWhite4-4.gif',
+  ];
+
+  int _totalSeconds = 25 * 60; // Tiempo total en segundos
+  late int _interval; // Intervalo de cambio de imagen
+
+  int _currentImageIndex() {
+    int index = (_seconds / _interval).floor();
+    return index.clamp(0,
+        coffeeGifs.length - 1); // Asegura que el índice esté dentro del rango
+  }
+
   generateDialog(dynamic classDialog, double heightCard) {
     return showDialog(
       context: context,
@@ -78,6 +95,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _interval = (_totalSeconds / 5).floor();
     _checkNotificationPermission();
   }
 
@@ -164,13 +182,11 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isTimerRunning = true; // El temporizador ha comenzado
     });
-
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_seconds > 0) {
         setState(() {
           _seconds--;
         });
-        // _updateNotification(_formattedTime);
       } else {
         _timer?.cancel(); // Detener el temporizador cuando llegue a 0
         _showNotificationComplete();
@@ -270,7 +286,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Image.asset(
-                'assets/gifs/CoffeCompleteWhite3-4.gif',
+                coffeeGifs[
+                    _currentImageIndex()], // Cambia la imagen según el índice
                 height: 425.0,
                 width: 425.0,
               ),

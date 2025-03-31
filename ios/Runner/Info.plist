@@ -36,8 +36,8 @@
 		</array>
 		<key>UIBackgroundModes</key>
 		<array>
-		    <string>fetch</string>
-		    <string>remote-notification</string>
+			<string>fetch</string>
+			<string>remote-notification</string>
 		</array>
 		<key>NSUserTrackingUsageDescription</key>
 		<string>This app uses notifications to inform you about the countdown timer.</string>

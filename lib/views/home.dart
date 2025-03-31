@@ -4,11 +4,14 @@ import 'dart:ui';
 
 import 'package:devtimer/main.dart';
 import 'package:devtimer/views/dialogs-views/settings-pomodoro.dart';
+import 'package:devtimer/widgets/ads/ad-banner.dart';
 
 import 'package:flutter/material.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import 'package:audioplayers/audioplayers.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -20,6 +23,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
   int _seconds = 25 * 60; // 25 minutos en segundos
   late Timer _timer;
   bool _isTimerRunning = false;
@@ -35,13 +39,26 @@ class _HomePageState extends State<HomePage> {
     'assets/gifs/CoffeCompleteWhite4-4.gif',
   ];
 
-  int _totalSeconds = 25 * 60; // Tiempo total en segundos
+  final int _totalSeconds = 25 * 60; // Tiempo total en segundos
   late int _interval; // Intervalo de cambio de imagen
+
+  int _previousImageIndex = 0;
 
   int _currentImageIndex() {
     int index = (_seconds / _interval).floor();
-    return index.clamp(0,
-        coffeeGifs.length - 1); // Asegura que el índice esté dentro del rango
+    index = index.clamp(0, coffeeGifs.length - 1);
+
+    // Verificar si el índice ha cambiado
+    if (index != _previousImageIndex) {
+      _playSlurpSound(); // Reproducir el sonido
+      _previousImageIndex = index; // Actualizar el índice anterior
+    }
+
+    return index;
+  }
+
+  void _playSlurpSound() async {
+    await _audioPlayer.play(AssetSource('sounds/coffee-slurp.mp3'));
   }
 
   generateDialog(dynamic classDialog, double heightCard) {
@@ -224,6 +241,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _timer.cancel();
+    _audioPlayer.dispose(); // Asegúrate de liberar el AudioPlayer
     super.dispose();
   }
 
@@ -349,49 +367,55 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        labelBehavior: labelBehavior,
-        selectedIndex: currentPageIndex,
-        onDestinationSelected: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
-        },
-        indicatorColor: Color.fromARGB(255, 240, 185, 113),
-        backgroundColor: const Color.fromARGB(255, 153, 105, 43),
-        destinations: const <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(
-              Icons.coffee,
-              color: Color.fromARGB(255, 153, 105, 43),
+      bottomNavigationBar: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [        
+        NavigationBar(
+          labelBehavior: labelBehavior,
+          selectedIndex: currentPageIndex,
+          onDestinationSelected: (int index) {
+            setState(() {
+              currentPageIndex = index;
+            });
+          },
+          indicatorColor: Color.fromARGB(255, 240, 185, 113),
+          backgroundColor: const Color.fromARGB(255, 153, 105, 43),
+          destinations: const <Widget>[
+            NavigationDestination(
+              selectedIcon: Icon(
+                Icons.coffee,
+                color: Color.fromARGB(255, 153, 105, 43),
+              ),
+              icon: Icon(Icons.coffee, color: Color.fromARGB(255, 240, 185, 113)),
+              label: 'Pomodoro',
             ),
-            icon: Icon(Icons.coffee, color: Color.fromARGB(255, 240, 185, 113)),
-            label: 'Pomodoro',
-          ),
-          NavigationDestination(
-            selectedIcon: Icon(
-              Icons.update_outlined,
-              color: const Color.fromARGB(255, 153, 105, 43),
+            NavigationDestination(
+              selectedIcon: Icon(
+                Icons.update_outlined,
+                color: const Color.fromARGB(255, 153, 105, 43),
+              ),
+              icon: Icon(
+                Icons.update_outlined,
+                color: Color.fromARGB(255, 240, 185, 113),
+              ),
+              label: 'Short Break',
             ),
-            icon: Icon(
-              Icons.update_outlined,
-              color: Color.fromARGB(255, 240, 185, 113),
+            NavigationDestination(
+              selectedIcon: Icon(
+                Icons.self_improvement_sharp,
+                color: const Color.fromARGB(255, 153, 105, 43),
+              ),
+              icon: Icon(
+                Icons.self_improvement_sharp,
+                color: Color.fromARGB(255, 240, 185, 113),
+              ),
+              label: 'Long Break',
             ),
-            label: 'Short Break',
-          ),
-          NavigationDestination(
-            selectedIcon: Icon(
-              Icons.self_improvement_sharp,
-              color: const Color.fromARGB(255, 153, 105, 43),
-            ),
-            icon: Icon(
-              Icons.self_improvement_sharp,
-              color: Color.fromARGB(255, 240, 185, 113),
-            ),
-            label: 'Long Break',
-          ),
-        ],
-      ),
+          ],
+        ),
+        AdBanner(), // Aquí se muestra el banner de anuncios
+      ],
+    ),
     );
   }
 }

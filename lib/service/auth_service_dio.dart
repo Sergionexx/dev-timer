@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://localhost:3000/api/auth/'; // Reemplaza con tu URL base
+  static const String baseUrl = 'http://192.168.1.12:3000/api/auth'; // Reemplaza con tu URL base
   final Dio _dio = Dio();
 
   // Registro de usuario

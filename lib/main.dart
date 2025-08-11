@@ -50,7 +50,8 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         routes: <String, WidgetBuilder>{
-          '/': (BuildContext context) => LoginScreen(),
+          '/': (BuildContext context) =>
+              HomePage(title: 'Coffie: Pomodoro & Tasks'),
           '/home': (context) => const HomePage(title: 'Dev Timer'),
           '/register': (context) => RegisterScreen(),
           '/profile': (context) => ProfileScreen(),

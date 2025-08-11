@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:devtimer/main.dart';
@@ -10,8 +9,11 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:audioplayers/audioplayers.dart';
+
+enum TimerState { pomodoro, shortBreak, longBreak }
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -24,12 +26,20 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  int _seconds = 25 * 60; // 25 minutos en segundos
+  int _seconds = 25 * 60; // 25 minutos en segundos por defecto
   late Timer _timer;
   bool _isTimerRunning = false;
   int currentPageIndex = 0;
   NavigationDestinationLabelBehavior labelBehavior =
       NavigationDestinationLabelBehavior.onlyShowSelected;
+
+  // Tiempos configurables
+  int _pomodoroTime = 25 * 60; // 25 minutos por defecto
+  int _shortBreakTime = 5 * 60; // 5 minutos por defecto
+  int _longBreakTime = 15 * 60; // 15 minutos por defecto
+
+  // Estado actual del timer
+  TimerState _currentState = TimerState.pomodoro;
 
   List<String> coffeeGifs = [
     'assets/gifs/CoffeCompleteWhite0-4.gif',
@@ -114,6 +124,77 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _interval = (_totalSeconds / 5).floor();
     _checkNotificationPermission();
+    _loadSavedTimes();
+  }
+
+  void _loadSavedTimes() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _pomodoroTime =
+          _parseTimeToSeconds(prefs.getString('pomodoro_time') ?? '25:00');
+      _shortBreakTime =
+          _parseTimeToSeconds(prefs.getString('short_break_time') ?? '05:00');
+      _longBreakTime =
+          _parseTimeToSeconds(prefs.getString('long_break_time') ?? '15:00');
+      _seconds = _pomodoroTime; // Inicializar con tiempo pomodoro
+    });
+  }
+
+  int _parseTimeToSeconds(String timeString) {
+    final parts = timeString.split(':');
+    if (parts.length != 2) return 25 * 60; // Valor por defecto
+
+    final minutes = int.tryParse(parts[0]) ?? 25;
+    final seconds = int.tryParse(parts[1]) ?? 0;
+
+    return (minutes * 60) + seconds;
+  }
+
+  void _updateTimerState(TimerState newState) {
+    if (_isTimerRunning) return; // No cambiar si el timer está corriendo
+
+    setState(() {
+      _currentState = newState;
+      // Sincronizar el currentPageIndex con el estado
+      switch (newState) {
+        case TimerState.pomodoro:
+          _seconds = _pomodoroTime;
+          currentPageIndex = 0;
+          break;
+        case TimerState.shortBreak:
+          _seconds = _shortBreakTime;
+          currentPageIndex = 1;
+          break;
+        case TimerState.longBreak:
+          _seconds = _longBreakTime;
+          currentPageIndex = 2;
+          break;
+      }
+    });
+  }
+
+  void _onTimesUpdated(
+      int pomodoroTime, int shortBreakTime, int longBreakTime) {
+    setState(() {
+      _pomodoroTime = pomodoroTime;
+      _shortBreakTime = shortBreakTime;
+      _longBreakTime = longBreakTime;
+
+      // Actualizar el tiempo actual si no está corriendo
+      if (!_isTimerRunning) {
+        switch (_currentState) {
+          case TimerState.pomodoro:
+            _seconds = _pomodoroTime;
+            break;
+          case TimerState.shortBreak:
+            _seconds = _shortBreakTime;
+            break;
+          case TimerState.longBreak:
+            _seconds = _longBreakTime;
+            break;
+        }
+      }
+    });
   }
 
   Future<void> _checkNotificationPermission() async {
@@ -130,30 +211,6 @@ class _HomePageState extends State<HomePage> {
     } else if (status.isGranted) {
       print("Permiso ya concedido");
     }
-  }
-
-  Future<void> _showNotification(seconds) async {
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      'timer_channel_id',
-      'Timer Notifications',
-      channelDescription: 'Shows the countdown timer',
-      importance: Importance.low,
-      priority: Priority.low,
-      ongoing: true,
-      vibrationPattern: null,
-      enableVibration: false,
-    );
-
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidDetails);
-
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'Focus Time',
-      'Time remaining: $seconds seconds',
-      notificationDetails,
-    );
   }
 
   Future<void> _showNotificationComplete() async {
@@ -189,7 +246,18 @@ class _HomePageState extends State<HomePage> {
   void _stopTimer() {
     _timer.cancel(); // Detener el temporizador
     setState(() {
-      _seconds = 25 * 60;
+      // Reiniciar con el tiempo correspondiente al estado actual
+      switch (_currentState) {
+        case TimerState.pomodoro:
+          _seconds = _pomodoroTime;
+          break;
+        case TimerState.shortBreak:
+          _seconds = _shortBreakTime;
+          break;
+        case TimerState.longBreak:
+          _seconds = _longBreakTime;
+          break;
+      }
       _isTimerRunning = false; // Cambiar el estado a detenido
     });
     // _updateNotification(0);
@@ -205,37 +273,13 @@ class _HomePageState extends State<HomePage> {
           _seconds--;
         });
       } else {
-        _timer?.cancel(); // Detener el temporizador cuando llegue a 0
+        _timer.cancel(); // Detener el temporizador cuando llegue a 0
         _showNotificationComplete();
         setState(() {
           _isTimerRunning = false; // El temporizador ha terminado
         });
       }
     });
-  }
-
-  // Actualizar la notificación con el tiempo restante
-  Future<void> _updateNotification(seconds) async {
-    AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'timer_channel_id',
-      'Timer Notifications',
-      channelDescription: 'Shows the countdown timer',
-      importance: Importance.low,
-      priority: Priority.low,
-      ongoing: true, // Mantener la notificación en segundo plano
-      vibrationPattern: Int64List.fromList([]), // Sin vibración
-      enableVibration: false, // Desactiva la vibración
-    );
-
-    NotificationDetails notificationDetails =
-        NotificationDetails(android: androidDetails);
-
-    await flutterLocalNotificationsPlugin.show(
-      0, // ID de la notificación (se mantiene el mismo ID)
-      'Timer Countdown',
-      'Time remaining: $seconds seconds', // Mostrar el tiempo restante
-      notificationDetails,
-    );
   }
 
   @override
@@ -255,6 +299,17 @@ class _HomePageState extends State<HomePage> {
     return n >= 10 ? '$n' : '0$n';
   }
 
+  String get _currentStateTitle {
+    switch (_currentState) {
+      case TimerState.pomodoro:
+        return "Focus Time";
+      case TimerState.shortBreak:
+        return "Short Break";
+      case TimerState.longBreak:
+        return "Long Break";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -262,7 +317,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Container(
           margin: const EdgeInsets.only(left: 5),
-          child: Text(widget.title),
+          child: Text("Dev Timer - ${_currentStateTitle}"),
         ),
       ),
       drawer: Drawer(
@@ -274,7 +329,8 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.access_alarms_rounded),
               title: Text('Adjust pomodoro'),
               onTap: () {
-                generateDialog(SettingsPomodoro(), 200);
+                generateDialog(
+                    SettingsPomodoro(onTimesUpdated: _onTimesUpdated), 200);
               },
             ),
             ListTile(
@@ -290,132 +346,167 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Container(
         decoration: const BoxDecoration(color: Color.fromARGB(255, 0, 0, 0)),
-        child: Center(
+        child: SafeArea(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                _formattedTime,
-                style: const TextStyle(
-                  fontFamily: "Tiny5",
-                  color: Colors.white,
-                  fontSize: 80,
-                  fontWeight: FontWeight.w500,
+              // Header con título del estado actual
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  _currentStateTitle,
+                  style: const TextStyle(
+                    fontFamily: "Tiny5",
+                    color: Color.fromARGB(255, 153, 105, 43),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-              Image.asset(
-                coffeeGifs[
-                    _currentImageIndex()], // Cambia la imagen según el índice
-                height: 425.0,
-                width: 425.0,
+              
+              // Contenido principal que se expande
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Timer
+                    Text(
+                      _formattedTime,
+                      style: const TextStyle(
+                        fontFamily: "Tiny5",
+                        color: Colors.white,
+                        fontSize: 80,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    
+                    // Imagen flexible que se adapta al espacio disponible
+                    Flexible(
+                      child: AspectRatio(
+                        aspectRatio: 1.0,
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            maxWidth: 350.0,
+                            maxHeight: 350.0,
+                          ),
+                          child: Image.asset(
+                            coffeeGifs[_currentImageIndex()],
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
-              // const SizedBox(height: 5),
-              Row(
-                children: [
-                  const SizedBox(
-                    width: 30,
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(
-                            15), // Ensure padding for circular shape
+              
+              // Botones de control fijos en la parte inferior
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 30),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(15),
+                        ),
+                        onPressed: _startOrStopTimer,
+                        child: Icon(
+                            _isTimerRunning ? Icons.pause : Icons.play_arrow),
                       ),
-                      onPressed:
-                          _startOrStopTimer, // Llamar al método que empieza o detiene el temporizador
-                      child: Icon(
-                          _isTimerRunning ? Icons.pause : Icons.play_arrow),
                     ),
-                  ),
-                  const SizedBox(
-                    width: 30,
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(
-                            15), // Ensure padding for circular shape
+                    const SizedBox(width: 30),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(15),
+                        ),
+                        onPressed: _startOrStopTimer,
+                        child: const Icon(Icons.stop),
                       ),
-                      onPressed:
-                          _startOrStopTimer, // Llamar al método que empieza o detiene el temporizador
-                      child: Icon(Icons.stop),
                     ),
-                  ),
-                  const SizedBox(
-                    width: 30,
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(
-                            15), // Ensure padding for circular shape
+                    const SizedBox(width: 30),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(15),
+                        ),
+                        onPressed: _startOrStopTimer,
+                        child: const Icon(Icons.volume_off),
                       ),
-                      onPressed:
-                          _startOrStopTimer, // Llamar al método que empieza o detiene el temporizador
-                      child: Icon(Icons.volume_off),
                     ),
-                  ),
-                  SizedBox(
-                    width: 30,
-                  ),
-                ],
+                    const SizedBox(width: 30),
+                  ],
+                ),
               ),
             ],
           ),
         ),
       ),
       bottomNavigationBar: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [        
-        NavigationBar(
-          labelBehavior: labelBehavior,
-          selectedIndex: currentPageIndex,
-          onDestinationSelected: (int index) {
-            setState(() {
-              currentPageIndex = index;
-            });
-          },
-          indicatorColor: Color.fromARGB(255, 240, 185, 113),
-          backgroundColor: const Color.fromARGB(255, 153, 105, 43),
-          destinations: const <Widget>[
-            NavigationDestination(
-              selectedIcon: Icon(
-                Icons.coffee,
-                color: Color.fromARGB(255, 153, 105, 43),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NavigationBar(
+            labelBehavior: labelBehavior,
+            selectedIndex: currentPageIndex,
+            onDestinationSelected: (int index) {
+              // Cambiar el estado del timer según la opción seleccionada
+              switch (index) {
+                case 0:
+                  _updateTimerState(TimerState.pomodoro);
+                  break;
+                case 1:
+                  _updateTimerState(TimerState.shortBreak);
+                  break;
+                case 2:
+                  _updateTimerState(TimerState.longBreak);
+                  break;
+              }
+            },
+            indicatorColor: Color.fromARGB(255, 240, 185, 113),
+            backgroundColor: const Color.fromARGB(255, 153, 105, 43),
+            destinations: const <Widget>[
+              NavigationDestination(
+                selectedIcon: Icon(
+                  Icons.coffee,
+                  color: Color.fromARGB(255, 153, 105, 43),
+                ),
+                icon: Icon(Icons.coffee,
+                    color: Color.fromARGB(255, 240, 185, 113)),
+                label: 'Pomodoro',
               ),
-              icon: Icon(Icons.coffee, color: Color.fromARGB(255, 240, 185, 113)),
-              label: 'Pomodoro',
-            ),
-            NavigationDestination(
-              selectedIcon: Icon(
-                Icons.update_outlined,
-                color: const Color.fromARGB(255, 153, 105, 43),
+              NavigationDestination(
+                selectedIcon: Icon(
+                  Icons.update_outlined,
+                  color: const Color.fromARGB(255, 153, 105, 43),
+                ),
+                icon: Icon(
+                  Icons.update_outlined,
+                  color: Color.fromARGB(255, 240, 185, 113),
+                ),
+                label: 'Short Break',
               ),
-              icon: Icon(
-                Icons.update_outlined,
-                color: Color.fromARGB(255, 240, 185, 113),
+              NavigationDestination(
+                selectedIcon: Icon(
+                  Icons.self_improvement_sharp,
+                  color: const Color.fromARGB(255, 153, 105, 43),
+                ),
+                icon: Icon(
+                  Icons.self_improvement_sharp,
+                  color: Color.fromARGB(255, 240, 185, 113),
+                ),
+                label: 'Long Break',
               ),
-              label: 'Short Break',
-            ),
-            NavigationDestination(
-              selectedIcon: Icon(
-                Icons.self_improvement_sharp,
-                color: const Color.fromARGB(255, 153, 105, 43),
-              ),
-              icon: Icon(
-                Icons.self_improvement_sharp,
-                color: Color.fromARGB(255, 240, 185, 113),
-              ),
-              label: 'Long Break',
-            ),
-          ],
-        ),
-        AdBanner(), // Aquí se muestra el banner de anuncios
-      ],
-    ),
+            ],
+          ),
+          AdBanner(), // Aquí se muestra el banner de anuncios
+        ],
+      ),
     );
   }
 }

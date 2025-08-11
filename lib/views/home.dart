@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:devtimer/main.dart';
 import 'package:devtimer/views/dialogs-views/settings-pomodoro.dart';
 import 'package:devtimer/widgets/ads/ad-banner.dart';
+import 'package:devtimer/widgets/tasks_widget.dart';
 
 import 'package:flutter/material.dart';
 
@@ -32,6 +33,9 @@ class _HomePageState extends State<HomePage> {
   int currentPageIndex = 0;
   NavigationDestinationLabelBehavior labelBehavior =
       NavigationDestinationLabelBehavior.onlyShowSelected;
+
+  // Variable para forzar la actualización del widget de tareas
+  int _taskUpdateCounter = 0;
 
   // Tiempos configurables
   int _pomodoroTime = 25 * 60; // 25 minutos por defecto
@@ -197,6 +201,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onTasksUpdated() {
+    setState(() {
+      _taskUpdateCounter++;
+    });
+  }
+
   Future<void> _checkNotificationPermission() async {
     var status = await Permission.notification.status;
 
@@ -328,6 +338,25 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.task_alt,
+              color: Color.fromARGB(255, 153, 105, 43),
+              size: 28,
+            ),
+            onPressed: () {
+              generateDialog(
+                SettingsPomodoro(
+                  onTimesUpdated: _onTimesUpdated,
+                  onTasksUpdated: _onTasksUpdated,
+                ),
+                600,
+              );
+            },
+            tooltip: 'Configurar Pomodoro y Tareas',
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -339,7 +368,11 @@ class _HomePageState extends State<HomePage> {
               title: Text('Adjust pomodoro'),
               onTap: () {
                 generateDialog(
-                    SettingsPomodoro(onTimesUpdated: _onTimesUpdated), 200);
+                    SettingsPomodoro(
+                      onTimesUpdated: _onTimesUpdated,
+                      onTasksUpdated: _onTasksUpdated,
+                    ),
+                    200);
               },
             ),
             ListTile(
@@ -391,6 +424,7 @@ class _HomePageState extends State<HomePage> {
 
                     // Imagen flexible que se adapta al espacio disponible
                     Flexible(
+                      flex: 2,
                       child: AspectRatio(
                         aspectRatio: 1.0,
                         child: Container(
@@ -406,6 +440,12 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 20),
+
+                    // Widget de tareas
+                    Flexible(
+                      flex: 1,
+                      child: TasksWidget(key: ValueKey(_taskUpdateCounter)),
+                    ),
                   ],
                 ),
               ),

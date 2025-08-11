@@ -314,11 +314,20 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Container(
-          margin: const EdgeInsets.only(left: 5),
-          child: Text("Dev Timer - ${_currentStateTitle}"),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
+        title: Text(
+          "Coffeodoro",
+          style: const TextStyle(
+            fontFamily: "Pixelify",
+            color: Colors.white,
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
+          ),
         ),
+        elevation: 0,
       ),
       drawer: Drawer(
         child: ListView(
@@ -362,7 +371,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              
+
               // Contenido principal que se expande
               Expanded(
                 child: Column(
@@ -379,7 +388,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Imagen flexible que se adapta al espacio disponible
                     Flexible(
                       child: AspectRatio(
@@ -400,7 +409,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              
+
               // Botones de control fijos en la parte inferior
               Padding(
                 padding: const EdgeInsets.all(16.0),

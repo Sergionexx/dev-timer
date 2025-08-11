@@ -62,8 +62,8 @@ class _HomePageState extends State<HomePage> {
     int index = (_seconds / _interval).floor();
     index = index.clamp(0, coffeeGifs.length - 1);
 
-    // Verificar si el índice ha cambiado
-    if (index != _previousImageIndex) {
+    // Verificar si el índice ha cambiado y si el temporizador está corriendo
+    if (_isTimerRunning && index != _previousImageIndex) {
       _playSlurpSound(); // Reproducir el sonido
       _previousImageIndex = index; // Actualizar el índice anterior
     }

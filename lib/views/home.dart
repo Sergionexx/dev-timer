@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:ui';
+import 'dart:convert';
 
 import 'package:devtimer/main.dart';
+import 'package:devtimer/service/background_service.dart';
 import 'package:devtimer/views/dialogs-views/settings-pomodoro.dart';
 import 'package:devtimer/widgets/ads/ad-banner.dart';
 import 'package:devtimer/widgets/tasks_widget.dart';
@@ -320,6 +322,90 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  String? _backgroundImageBase64;
+  final TextEditingController _promptController = TextEditingController();
+
+  Future<void> _generateBackground() async {
+    final prompt = _promptController.text.trim();
+    if (prompt.isNotEmpty) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: Stack(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.3),
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Container(
+                    width: 200,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 10),
+                        Text(
+                          'Generando fondo...',
+                          style: TextStyle(
+                            fontFamily: "Tiny5",
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      final imageBase64 = await BackgroundService.generateBackground(
+        _promptController.text.trim(),
+        1080,
+        1920,
+      );
+
+      Navigator.of(context).pop(); // Cerrar el diálogo
+
+      if (imageBase64 != null) {
+        setState(() {
+          _backgroundImageBase64 = imageBase64;
+        });
+      } else {
+        generateDialog(
+          const Center(
+            child: Text(
+              'Error al generar el fondo',
+              style: TextStyle(
+                fontFamily: "Tiny5",
+                fontSize: 16,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          200,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -356,7 +442,7 @@ class _HomePageState extends State<HomePage> {
             },
             tooltip: 'Configurar Pomodoro y Tareas',
           ),
-        ],
+        ], // Cambié la llave de cierre '}' por un corchete ']' para cerrar correctamente la lista de acciones
       ),
       drawer: Drawer(
         child: ListView(
@@ -387,7 +473,23 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(color: Color.fromARGB(255, 0, 0, 0)),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 0, 0, 0),
+          image: _backgroundImageBase64 != null
+              ? DecorationImage(
+                  image: MemoryImage(
+                    base64Decode(
+                      _backgroundImageBase64!.split(',').last,
+                    ),
+                  ),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.5), // Oscurecer el fondo
+                    BlendMode.darken,
+                  ),
+                )
+              : null,
+        ),
         child: SafeArea(
           child: Column(
             children: [
@@ -441,10 +543,64 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Widget de tareas
+                    // Widget de tareas con mayor espacio
                     Flexible(
-                      flex: 1,
+                      flex: 2, // Incrementé el espacio asignado al widget de tareas
                       child: TasksWidget(key: ValueKey(_taskUpdateCounter)),
+                    ),
+                    // Campo de entrada para el prompt con botón de enviar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _promptController,
+                              decoration: InputDecoration(
+                                labelText: 'Escribe tu prompt',
+                                labelStyle:
+                                    const TextStyle(color: Colors.white),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide:
+                                      const BorderSide(color: Colors.white),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide:
+                                      const BorderSide(color: Colors.amber),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 8.0),
+                          Tooltip(
+                            message: 'Genera un fondo basado en el texto ingresado.',
+                            child: Icon(
+                              Icons.info_outline,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8.0),
+                          ElevatedButton(
+                            onPressed: () async {
+                              await _generateBackground();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 153, 105, 43),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 16.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            child: const Icon(Icons.send, color: Colors.white),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

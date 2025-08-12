@@ -1,0 +1,12 @@
+{
+  "appTitle": "Coffeodoro",
+  "focusTime": "Tiempo de Enfoque",
+  "shortBreak": "Descanso Corto",
+  "longBreak": "Descanso Largo",
+  "writePrompt": "Escribe tu prompt",
+  "generatingBackground": "Generando fondo...",
+  "errorGeneratingBackground": "Error al generar el fondo",
+  "language": "Lenguaje",
+  "spanish": "Español",
+  "english": "Inglés"
+}

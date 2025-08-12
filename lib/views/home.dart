@@ -414,7 +414,7 @@ class _HomePageState extends State<HomePage> {
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         title: Text(
-          "Coffeodoro",
+          "Coffodoro",
           style: const TextStyle(
             fontFamily: "Pixelify",
             color: Colors.white,
@@ -495,7 +495,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               // Header con título del estado actual
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(1.0),
                 child: Text(
                   _currentStateTitle,
                   style: const TextStyle(
@@ -518,11 +518,11 @@ class _HomePageState extends State<HomePage> {
                       style: const TextStyle(
                         fontFamily: "Tiny5",
                         color: Colors.white,
-                        fontSize: 80,
+                        fontSize: 70,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
 
                     // Imagen flexible que se adapta al espacio disponible
                     Flexible(
@@ -545,7 +545,8 @@ class _HomePageState extends State<HomePage> {
 
                     // Widget de tareas con mayor espacio
                     Flexible(
-                      flex: 2, // Incrementé el espacio asignado al widget de tareas
+                      flex:
+                          3, // Incrementé el espacio asignado al widget de tareas
                       child: TasksWidget(key: ValueKey(_taskUpdateCounter)),
                     ),
                     // Campo de entrada para el prompt con botón de enviar
@@ -577,7 +578,8 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(width: 8.0),
                           Tooltip(
-                            message: 'Genera un fondo basado en el texto ingresado.',
+                            message:
+                                'Genera un fondo basado en el texto ingresado.',
                             child: Icon(
                               Icons.info_outline,
                               color: Colors.white,
@@ -709,7 +711,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          AdBanner(), // Aquí se muestra el banner de anuncios
+          // AdBanner(), // Aquí se muestra el banner de anuncios
         ],
       ),
     );

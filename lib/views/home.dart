@@ -90,13 +90,17 @@ class _HomePageState extends State<HomePage> {
             child: Stack(
               children: [
                 // Fondo distorsionado
-                SizedBox(
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                    child: Container(
-                      color: Colors.black.withOpacity(0.3),
+                GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {}, // Permitir que los eventos de puntero pasen
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                      child: Container(
+                        color: Colors.black.withOpacity(0.3),
+                      ),
                     ),
                   ),
                 ),
@@ -113,7 +117,28 @@ class _HomePageState extends State<HomePage> {
                         color: Colors
                             .white, // Cambiar color de fondo si es necesario
                       ),
-                      child: classDialog,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Expanded(child: classDialog),
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text(
+                                'Cerrar',
+                                style: TextStyle(
+                                  fontFamily: "Tiny5",
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -376,23 +401,37 @@ class _HomePageState extends State<HomePage> {
         },
       );
 
-      final imageBase64 = await BackgroundService.generateBackground(
-        _promptController.text.trim(),
-        1080,
-        1920,
-      );
+      try {
+        final imageBase64 = await BackgroundService.generateBackground(
+          _promptController.text.trim(),
+          1080,
+          1920,
+        ).timeout(const Duration(seconds: 15));
 
-      Navigator.of(context).pop(); // Cerrar el diálogo
-
-      if (imageBase64 != null) {
-        setState(() {
-          _backgroundImageBase64 = imageBase64;
-        });
-      } else {
+        if (imageBase64 != null) {
+          setState(() {
+            _backgroundImageBase64 = imageBase64;
+          });
+        } else {
+          generateDialog(
+            const Center(
+              child: Text(
+                'Error al generar el fondo: el contenido no se generó por infringir las políticas.',
+                style: TextStyle(
+                  fontFamily: "Tiny5",
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            200,
+          );
+        }
+      } catch (e) {
         generateDialog(
           const Center(
             child: Text(
-              'Error al generar el fondo: el contenido no se generó por infringir las políticas.',
+              'Error al generar el fondo: la solicitud excedió el tiempo límite de 15 segundos.',
               style: TextStyle(
                 fontFamily: "Tiny5",
                 fontSize: 16,
@@ -403,6 +442,8 @@ class _HomePageState extends State<HomePage> {
           200,
         );
       }
+
+      Navigator.of(context).pop(); // Cerrar el diálogo
     }
   }
 
@@ -460,14 +501,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                     200);
               },
-            ),
-            ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Profile'),
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
             ),
           ],
         ),
@@ -577,13 +610,26 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           const SizedBox(width: 8.0),
-                          Tooltip(
-                            message:
-                                'Genera un fondo basado en el texto ingresado.',
-                            child: Icon(
+                          IconButton(
+                            icon: const Icon(
                               Icons.info_outline,
                               color: Colors.white,
                             ),
+                            onPressed: () {
+                              generateDialog(
+                                const Center(
+                                  child: Text(
+                                    'Genera un fondo basado en el texto ingresado.',
+                                    style: TextStyle(
+                                      fontFamily: "Tiny5",
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                200,
+                              );
+                            },
                           ),
                           const SizedBox(width: 8.0),
                           ElevatedButton(

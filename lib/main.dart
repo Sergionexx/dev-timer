@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFE6A24A)),
-          useMaterial3: true,
+          useMaterial3: false, // Deshabilitar Material 3 para evitar problemas con MouseTracker
           textTheme: const TextTheme(
             bodyLarge: TextStyle(fontFamily: 'PixelifySans'),
             bodyMedium: TextStyle(fontFamily: 'PixelifySans'),
@@ -62,11 +62,11 @@ class MyApp extends StatelessWidget {
         ),
         routes: <String, WidgetBuilder>{
           '/': (BuildContext context) =>
-              HomePage(title: 'Coffie: Pomodoro & Tasks'),
+              HomePage(title: 'Coffodoro: Pomodoro & Tasks'),
           '/home': (context) => const HomePage(title: 'Dev Timer'),
-          '/register': (context) => RegisterScreen(),
-          '/profile': (context) => ProfileScreen(),
-          '/recovery': (context) => RecoveryPasswordScreen(),
+          //   '/register': (context) => RegisterScreen(),
+          //  '/profile': (context) => ProfileScreen(),
+          //  '/recovery': (context) => RecoveryPasswordScreen(),
         });
   }
 }

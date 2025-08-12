@@ -392,7 +392,7 @@ class _HomePageState extends State<HomePage> {
         generateDialog(
           const Center(
             child: Text(
-              'Error al generar el fondo',
+              'Error al generar el fondo: el contenido no se generó por infringir las políticas.',
               style: TextStyle(
                 fontFamily: "Tiny5",
                 fontSize: 16,

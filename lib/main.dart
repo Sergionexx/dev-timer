@@ -48,6 +48,17 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFE6A24A)),
           useMaterial3: true,
+          textTheme: const TextTheme(
+            bodyLarge: TextStyle(fontFamily: 'PixelifySans'),
+            bodyMedium: TextStyle(fontFamily: 'PixelifySans'),
+            bodySmall: TextStyle(fontFamily: 'PixelifySans'),
+            titleLarge: TextStyle(fontFamily: 'PixelifySans'),
+            titleMedium: TextStyle(fontFamily: 'PixelifySans'),
+            titleSmall: TextStyle(fontFamily: 'PixelifySans'),
+            labelLarge: TextStyle(fontFamily: 'PixelifySans'),
+            labelMedium: TextStyle(fontFamily: 'PixelifySans'),
+            labelSmall: TextStyle(fontFamily: 'PixelifySans'),
+          ),
         ),
         routes: <String, WidgetBuilder>{
           '/': (BuildContext context) =>

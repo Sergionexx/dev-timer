@@ -47,7 +47,8 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFE6A24A)),
-          useMaterial3: false, // Deshabilitar Material 3 para evitar problemas con MouseTracker
+          useMaterial3:
+              false, // Deshabilitar Material 3 para evitar problemas con MouseTracker
           textTheme: const TextTheme(
             bodyLarge: TextStyle(fontFamily: 'PixelifySans'),
             bodyMedium: TextStyle(fontFamily: 'PixelifySans'),

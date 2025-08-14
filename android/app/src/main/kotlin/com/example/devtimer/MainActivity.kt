@@ -1,4 +1,4 @@
-package com.example.devtimer
+package com.yapysoft.coffodoro
 
 import io.flutter.embedding.android.FlutterActivity
 
